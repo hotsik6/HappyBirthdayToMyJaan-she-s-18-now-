@@ -16,11 +16,33 @@ body, html {
     image-rendering: pixelated;
 }
 
+/* canvas (фон) */
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* відео (поверх canvas) */
+#introVideo {
+    position: fixed; /* 🔥 важливо */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 5;
+    display: none;
+}
+
+/* кнопки (завжди зверху) */
 #ui {
     position: absolute;
     bottom: 20px;
     width: 100%;
     text-align: center;
+    z-index: 10;
 }
 
 button {
@@ -31,4 +53,5 @@ button {
     border: none;
     background-color: #ff69b4;
     color: white;
+
 }
