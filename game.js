@@ -23,33 +23,27 @@ window.onload = () => {
     const music7 = new Audio("assets/music7.mp3");
 
 
-    const allAudios = [];
+    const allAudios = [music1, music2, music3, music4, music55, music5, music6, music66, music7];
 
-    function unlockAudios() {
-        allAudios.forEach(audio => {
-            const oldVolume = audio.volume;
-            const oldMuted = audio.muted;
-
-            audio.muted = true;
-            audio.volume = 0;
-
-            audio.play()
-                .then(() => {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.volume = oldVolume;
-                    audio.muted = oldMuted;
-                })
-                .catch(() => {
-                    audio.volume = oldVolume;
-                    audio.muted = oldMuted;
-                });
-        });
-    }
+    allAudios.forEach(audio => {
+        audio.preload = "auto";
+        audio.volume = 0;
+        audio.pause();
+        audio.currentTime = 0;
+    });
     // ---- loop ----
     music55.loop = false;
     music66.loop = true;
 
+
+    function stopAllAudios() {
+        allAudios.forEach(audio => {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = 0;
+            audio.muted = false;
+        });
+    }
     // ---- fade звук ----
     function fadeIn(audio, target = 1, speed = 0.01) {
         audio.play();
@@ -170,6 +164,7 @@ window.onload = () => {
     let showContinue = false;
     let showTheEnd = false;
 
+    let gameStarted = false;
     // ---- slideshow ----
     let currentImgIndex = 0;
     let imgTimer = 0;
@@ -460,21 +455,15 @@ window.onload = () => {
 
     // ---- кнопки ----
     startBtn.onclick = () => {
+        if (gameStarted) return;
+        gameStarted = true;
+
+        stopAllAudios();
+
         startBtn.style.display = 'none';
         video.style.display = 'block';
 
-        music1.volume = 0;
-        music2.volume = 0;
-        music3.volume = 0;
-        music4.volume = 0;
-        music55.volume = 0;
-        music5.volume = 0;
-        music6.volume = 0;
-        music66.volume = 0;
-        music7.volume = 0;
-
-        unlockAudios();
-
+        video.currentTime = 0;
         video.play().catch(err => {
             console.log("video play error:", err);
         });
