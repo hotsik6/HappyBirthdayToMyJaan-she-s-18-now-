@@ -199,9 +199,7 @@ window.onload = () => {
         menu: ["Натисни Start ❤️"],
 
         blackText: [
-            `Khushi: ughh, again?!
-            Why I have to go 
-            through this?...`,
+            "Khushi: ughh, again?! Why I have to go through this?...",
             "Khushi: Hmm and why does this keep happening with me...",
             "Khushi: Just... everything feels the same!",
             "Khushi: hmm...  I'll just... go on the rooftop again...",
@@ -563,24 +561,24 @@ window.onload = () => {
     ctx.imageSmoothingEnabled = false;
 
     // 👉 тільки для 3-ї фотки (photoIndex = 2)
-        if (photoIndex === 2) {
+    if (photoIndex === 2) {
 
-                const scale = Math.min(
-                    canvas.width / img.width,
-                    canvas.height / img.height
-                );
+            const scale = Math.min(
+                canvas.width / img.width,
+                canvas.height / img.height
+            );
 
-                const newWidth = img.width * scale;
-                const newHeight = img.height * scale;
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
 
-                const x = (canvas.width - newWidth) / 2;
-                const y = (canvas.height - newHeight) / 2;
+            const x = (canvas.width - newWidth) / 2;
+            const y = (canvas.height - newHeight) / 2;
 
-                ctx.drawImage(img, x, y, newWidth, newHeight);
+            ctx.drawImage(img, x, y, newWidth, newHeight);
 
-            } else {
-                // всі інші як були (на весь екран)
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        } else {
+            // всі інші як були (на весь екран)
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
         if (currentScene === 'finale') {
