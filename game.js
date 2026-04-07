@@ -35,6 +35,30 @@ window.onload = () => {
     music55.loop = false;
     music66.loop = true;
 
+    function unlockAudios() {
+        allAudios.forEach(audio => {
+            const oldVolume = audio.volume;
+            const oldMuted = audio.muted;
+            const oldCurrentTime = audio.currentTime;
+
+            audio.muted = true;
+            audio.volume = 0;
+            audio.currentTime = 0;
+
+            audio.play()
+                .then(() => {
+                    audio.pause();
+                    audio.currentTime = oldCurrentTime;
+                    audio.volume = oldVolume;
+                    audio.muted = oldMuted;
+                })
+                .catch(() => {
+                    audio.currentTime = oldCurrentTime;
+                    audio.volume = oldVolume;
+                    audio.muted = oldMuted;
+                });
+        });
+    }
 
     function stopAllAudios() {
         allAudios.forEach(audio => {
@@ -459,6 +483,7 @@ window.onload = () => {
         gameStarted = true;
 
         stopAllAudios();
+        unlockAudios();
 
         startBtn.style.display = 'none';
         video.style.display = 'block';
