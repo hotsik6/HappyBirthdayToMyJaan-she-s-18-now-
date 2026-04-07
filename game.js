@@ -547,73 +547,84 @@ window.onload = () => {
     }
 
     // ---- render ----
-    function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (currentScene === 'blackText') {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            drawText(displayedText, 'left', 'top');
-        }
-
-        if (currentScene === 'photo') {
-    let current = scenes.photo[photoIndex];
-    updateSlideshow(current);
-
-    let img = images[current.imgs[currentImgIndex]];
-
-    // ВАЖЛИВО для пікселів
-    ctx.imageSmoothingEnabled = false;
-
-    // 👉 тільки для 3-ї фотки (photoIndex = 2)
-        if (photoIndex === 2) {
-
-                const scale = Math.min(
-                    canvas.width / img.width,
-                    canvas.height / img.height
-                );
-
-                const newWidth = img.width * scale;
-                const newHeight = img.height * scale;
-
-                const x = (canvas.width - newWidth) / 2;
-                const y = (canvas.height - newHeight) / 2;
-
-                ctx.drawImage(img, x, y, newWidth, newHeight);
-
-            } else {
-                // всі інші як були (на весь екран)
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        }
-
-        if (currentScene === 'finale') {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            drawText(displayedText, 'center', 'center');
-
-            if (showContinue && !typing) {
-                ctx.fillStyle = 'yellow';
-                ctx.font = '26px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText("Continue", canvas.width / 2, canvas.height - 80);
-            }
-
-            if (showTheEnd) {
-                ctx.fillStyle = 'yellow';
-                ctx.font = '40px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText("The End", canvas.width / 2, canvas.height - 80);
-            }
-        }
-
-        if (fadeAlpha > 0) {
-            ctx.fillStyle = "rgba(0,0,0," + fadeAlpha + ")";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        requestAnimationFrame(gameLoop);
+    if (currentScene === 'blackText') {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawText(displayedText, 'left', 'top');
     }
 
-    gameLoop();
-};}
+    if (currentScene === 'photo') {
+        let current = scenes.photo[photoIndex];
+        updateSlideshow(current);
+
+        let img = images[current.imgs[currentImgIndex]];
+
+        ctx.imageSmoothingEnabled = false;
+
+        // тільки для 3-ї фотки
+        if (photoIndex === 2) {
+            const scale = Math.min(
+                canvas.width / img.width,
+                canvas.height / img.height
+            );
+
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+
+            const x = (canvas.width - newWidth) / 2;
+            const y = (canvas.height - newHeight) / 2;
+
+            ctx.drawImage(img, x, y, newWidth, newHeight);
+        } else {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
+
+        if (displayedText) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
+            ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
+
+            ctx.fillStyle = 'white';
+            ctx.font = '28px Arial';
+            ctx.textAlign = 'left';
+
+            const lines = displayedText.split('\n');
+            const lineHeight = 34;
+
+            lines.forEach((line, i) => {
+                ctx.fillText(line, 40, canvas.height - 100 + i * lineHeight);
+            });
+        }
+    }
+
+    if (currentScene === 'finale') {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawText(displayedText, 'center', 'center');
+
+        if (showContinue && !typing) {
+            ctx.fillStyle = 'yellow';
+            ctx.font = '26px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("Continue", canvas.width / 2, canvas.height - 80);
+        }
+
+        if (showTheEnd) {
+            ctx.fillStyle = 'yellow';
+            ctx.font = '40px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("The End", canvas.width / 2, canvas.height - 80);
+        }
+    }
+
+    if (fadeAlpha > 0) {
+        ctx.fillStyle = "rgba(0,0,0," + fadeAlpha + ")";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+};
