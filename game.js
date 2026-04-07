@@ -55,11 +55,15 @@ window.onload = () => {
 
     allAudios.forEach(setupAudio);
 
-    function fadeAudio(audio, target = 1, duration = 1) {
+    function fadeAudio(audio, target = 1, duration = 1, restart = false) {
         const gainNode = gainMap.get(audio);
         if (!gainNode) return;
 
         audio.muted = false;
+
+        if (restart) {
+            audio.currentTime = 0;
+        }
 
         if (audio.paused && target > 0) {
             audio.play().catch(() => {});
@@ -345,7 +349,7 @@ window.onload = () => {
 
     // ---- BLACK SCENE ----
     function playBlackScene() {
-        fadeAudio(music1, 0.6, 1.0);
+        fadeAudio(music1, 0.6, true);
 
         let i = 0;
 
@@ -360,7 +364,7 @@ window.onload = () => {
 
                     setTimeout(() => {
                         if (i === 3) {
-                            fadeAudio(music2, 0.3, 1.0);
+                            fadeAudio(music2, 0.3, true);
                             fadeAudio(music1, 0, 1.0);
                         }
 
@@ -370,7 +374,7 @@ window.onload = () => {
                                 music2.pause();
                                 music2.currentTime = 0;
 
-                                fadeAudio(music3, 0.8, 1.0);
+                                fadeAudio(music3, 0.8, true);
 
                                 setTimeout(() => {
                                     music1.pause();
@@ -379,7 +383,7 @@ window.onload = () => {
                                     music2.pause();
                                     music2.currentTime = 0;
 
-                                    fadeAudio(music4, 1, 1.0);
+                                    fadeAudio(music4, 1, true);
 
                                     setTimeout(() => {
                                         fadeToBlack(() => {
@@ -418,7 +422,7 @@ window.onload = () => {
 
         playPhotoTexts(scenes.photo[0]);
 
-        fadeAudio(music5, 0.6, 1.0);
+        fadeAudio(music5, 0.6, true);
 
         setTimeout(() => {
             fadeToBlack(() => {
@@ -428,7 +432,7 @@ window.onload = () => {
                 displayedText = "";
 
                 fadeAudio(music5, 0, 1.0);
-                fadeAudio(music66, 0.65, 1.2); // голосніше на 2 сцені
+                fadeAudio(music66, 0.65, 1.2, true); // голосніше на 2 сцені
                 fadeFromBlack(0.008);
             }, 0.008);
         }, 29000);
@@ -440,7 +444,7 @@ window.onload = () => {
                 imgTimer = 0;
                 displayedText = "";
 
-                fadeAudio(music7, 1, 1.0);
+                fadeAudio(music7, 1, true);
                 fadeAudio(music66, 0.08, 1.2); // знову тихо
 
                 fadeFromBlack(0.008);
