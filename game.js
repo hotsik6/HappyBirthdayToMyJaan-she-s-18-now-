@@ -552,33 +552,21 @@ window.onload = () => {
         }
 
         if (currentScene === 'photo') {
-    let current = scenes.photo[photoIndex];
-    updateSlideshow(current);
+            let current = scenes.photo[photoIndex];
+            updateSlideshow(current);
 
-    let img = images[current.imgs[currentImgIndex]];
-
-    // ВАЖЛИВО для пікселів
-    ctx.imageSmoothingEnabled = false;
-
-    // 👉 тільки для 3-ї фотки (photoIndex = 2)
-    if (photoIndex === 2) {
-
-            const scale = Math.min(
-                canvas.width / img.width,
-                canvas.height / img.height
-            );
-
-            const newWidth = img.width * scale;
-            const newHeight = img.height * scale;
-
-            const x = (canvas.width - newWidth) / 2;
-            const y = (canvas.height - newHeight) / 2;
-
-            ctx.drawImage(img, x, y, newWidth, newHeight);
-
-        } else {
-            // всі інші як були (на весь екран)
+            let img = images[current.imgs[currentImgIndex]];
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            if (displayedText) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
+                ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
+
+                ctx.fillStyle = 'white';
+                ctx.font = '28px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(displayedText, 40, canvas.height - 100);
+            }
         }
 
         if (currentScene === 'finale') {
@@ -611,4 +599,4 @@ window.onload = () => {
     }
 
     gameLoop();
-};}
+};
