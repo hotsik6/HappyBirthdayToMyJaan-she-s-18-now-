@@ -199,10 +199,10 @@ window.onload = () => {
         menu: ["Натисни Start ❤️"],
 
         blackText: [
-            `Khushi: ughh, again?! 
-            Why I have to go through this?...`,
-            `Khushi: Hmm and why does
-            this keep happening with me...`,
+            `Khushi: ughh, again?!
+            Why I have to go 
+            through this?...`,
+            "Khushi: Hmm and why does this keep happening with me...",
             "Khushi: Just... everything feels the same!",
             "Khushi: hmm...  I'll just... go on the rooftop again...",
             "Khushi: I wish.. everything would be fine(TT)"
@@ -213,8 +213,7 @@ window.onload = () => {
                 imgs: ["photo1", "photo15"],
                 texts: [
                     { text: "Khushi: hmm... i feel so sleepy...", pause: 5000 },
-                    { text: `But wait.. i want to turn something on
-                         first so i won't feel so alone at least(TT)`, pause: 10500 },
+                    { text: "But wait.. i want to turn something on first so i won't feel so alone at least(TT)", pause: 10500 },
                     {
                         text: "hmm... i wish he was here (｡-.-｡)...zzz *Falls Asleep*",
                         pause: 10500,
@@ -533,20 +532,15 @@ window.onload = () => {
         ctx.font = '30px Arial';
         ctx.textAlign = align;
 
-        const lines = text.split('\n'); // 👉 розбиваємо по \n
-        const lineHeight = 40;
-
         let x = align === 'left' ? 50 : canvas.width / 2;
 
-        let startY = vertical === 'top'
+        let y = vertical === 'top'
             ? 50
             : vertical === 'bottom'
-                ? canvas.height - (lines.length * lineHeight)
-                : canvas.height / 2 - (lines.length * lineHeight) / 2;
+                ? canvas.height - 80
+                : canvas.height / 2;
 
-        lines.forEach((line, i) => {
-            ctx.fillText(line, x, startY + i * lineHeight);
-        });
+        ctx.fillText(text, x, y);
     }
 
     // ---- render ----
