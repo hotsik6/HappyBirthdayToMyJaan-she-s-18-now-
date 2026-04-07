@@ -222,11 +222,11 @@ window.onload = () => {
         menu: ["Натисни Start ❤️"],
 
         blackText: [
-            "Khushi: ughh, again?! Why I have to go through this?...",
-            "Khushi: Hmm and why does this keep happening with me...",
-            "Khushi: Just... everything feels the same!",
-            "Khushi: hmm...  I'll just... go on the rooftop again...",
-            "Khushi: I wish.. everything would be fine(TT)"
+            {text:"Khushi: ughh, again?! Why I have to go through this?...", pause: 2000},
+            {text:"Khushi: Hmm and why does this keep happening with me...",pause: 2000},
+            {text:"Khushi: Just... everything feels the same!",pause: 2000},
+            {text:"Khushi: hmm...  I'll just... go on the rooftop again...",pause: 2000},
+            {text:"Khushi: I wish.. everything would be fine(TT)",pause: 2000}
         ],
 
         photo: [
@@ -243,7 +243,7 @@ window.onload = () => {
                             fadeAudio(music5, 0.9, 1.2);    // голосніше
 
                             setTimeout(() => {
-                                fadeAudio(music66, 0.08, 1.0); // тихо
+                                fadeAudio(music66, 0.08, 1.0, true); // тихо
                             }, 1000);
                         }
                     }
@@ -432,7 +432,7 @@ window.onload = () => {
                 displayedText = "";
 
                 fadeAudio(music5, 0, 1.0);
-                fadeAudio(music66, 0.65, 1.2, true); // голосніше на 2 сцені
+                fadeAudio(music66, 0.65, 1.2, 1.0); // голосніше на 2 сцені
                 fadeFromBlack(0.008);
             }, 0.008);
         }, 29000);
