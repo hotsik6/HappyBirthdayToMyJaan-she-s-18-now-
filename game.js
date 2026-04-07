@@ -37,10 +37,6 @@ window.onload = () => {
 
     function unlockAudios() {
         allAudios.forEach(audio => {
-            const oldVolume = audio.volume;
-            const oldMuted = audio.muted;
-            const oldCurrentTime = audio.currentTime;
-
             audio.muted = true;
             audio.volume = 0;
             audio.currentTime = 0;
@@ -48,14 +44,13 @@ window.onload = () => {
             audio.play()
                 .then(() => {
                     audio.pause();
-                    audio.currentTime = oldCurrentTime;
-                    audio.volume = oldVolume;
-                    audio.muted = oldMuted;
+                    audio.currentTime = 0;
+                    audio.muted = false;
+                    audio.volume = 0;
                 })
                 .catch(() => {
-                    audio.currentTime = oldCurrentTime;
-                    audio.volume = oldVolume;
-                    audio.muted = oldMuted;
+                    audio.muted = false;
+                    audio.volume = 0;
                 });
         });
     }
@@ -70,7 +65,9 @@ window.onload = () => {
     }
     // ---- fade звук ----
     function fadeIn(audio, target = 1, speed = 0.01) {
-        audio.play();
+        audio.muted = false;
+        audio.play().catch(() => {});
+
         const i = setInterval(() => {
             if (audio.volume < target) {
                 audio.volume += speed;
@@ -94,7 +91,8 @@ window.onload = () => {
     }
 
     function fadeToVolume(audio, target = 1, speed = 0.01) {
-        audio.play();
+        audio.muted = false;
+        audio.play().catch(() => {});
 
         const i = setInterval(() => {
             if (Math.abs(audio.volume - target) <= speed) {
@@ -478,20 +476,23 @@ window.onload = () => {
     }
 
     // ---- кнопки ----
-    startBtn.onclick = () => {
+    startBtn.onclick = async () => {
         if (gameStarted) return;
         gameStarted = true;
 
         stopAllAudios();
-        unlockAudios();
 
         startBtn.style.display = 'none';
         video.style.display = 'block';
 
         video.currentTime = 0;
-        video.play().catch(err => {
+
+        try {
+            await video.play();
+            unlockAudios();
+        } catch (err) {
             console.log("video play error:", err);
-        });
+        }
     };
 
     video.onended = () => {
