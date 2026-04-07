@@ -323,10 +323,11 @@ window.onload = () => {
                                 music2.pause();
                                 music2.currentTime = 0;
 
-                                setTimeout(() => {
-                                    fadeIn(music3, 0.8);
+                                fadeIn(music3, 0.8);
 
-                                    music3.onended = () => {
+                                    // ⏱ чекаємо поки music3 "типу закінчилась"
+                                    setTimeout(() => {
+
                                         music1.pause();
                                         music1.currentTime = 0;
 
@@ -335,16 +336,15 @@ window.onload = () => {
 
                                         fadeIn(music4, 1);
 
-                                        music4.onended = () => {
-                                            setTimeout(() => {
-                                                fadeToBlack(() => {
-                                                    startScene('photo');
-                                                    fadeFromBlack();
-                                                });
-                                            }, 2000);
-                                        };
-                                    };
-                                }, 2000);
+                                        // ⏱ чекаємо music4
+                                        setTimeout(() => {
+                                            fadeToBlack(() => {
+                                                startScene('photo');
+                                                fadeFromBlack();
+                                            });
+                                        }, 2000); // ← піджени під довжину music4 2000
+
+                                    }, 2000); // ← піджени під довжину music3 2000
                             }, 3000);
                             return;
                         }
