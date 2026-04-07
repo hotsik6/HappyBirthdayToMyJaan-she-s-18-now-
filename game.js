@@ -199,10 +199,12 @@ window.onload = () => {
         menu: ["Натисни Start ❤️"],
 
         blackText: [
-            "Khushi: ughh, again?! \nWhy I have to go through this?...",
-            "Khushi: Hmm and why does this keep\nhappening with me...",
+            `Khushi: ughh, again?! 
+            Why I have to go through this?...`,
+            `Khushi: Hmm and why does
+            this keep happening with me...`,
             "Khushi: Just... everything feels the same!",
-            "Khushi: hmm...  I'll just... \ngo on the rooftop again...",
+            "Khushi: hmm...  I'll just... go on the rooftop again...",
             "Khushi: I wish.. everything would be fine(TT)"
         ],
 
@@ -211,7 +213,8 @@ window.onload = () => {
                 imgs: ["photo1", "photo15"],
                 texts: [
                     { text: "Khushi: hmm... i feel so sleepy...", pause: 5000 },
-                    { text: "But wait.. i want to turn something on\n first so i won't feel so alone at least(TT)", pause: 10500 },
+                    { text: `But wait.. i want to turn something on
+                         first so i won't feel so alone at least(TT)`, pause: 10500 },
                     {
                         text: "hmm... i wish he was here (｡-.-｡)...zzz *Falls Asleep*",
                         pause: 10500,
@@ -547,84 +550,73 @@ window.onload = () => {
     }
 
     // ---- render ----
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (currentScene === 'blackText') {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawText(displayedText, 'left', 'top');
-    }
+        if (currentScene === 'blackText') {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawText(displayedText, 'left', 'top');
+        }
 
-    if (currentScene === 'photo') {
-        let current = scenes.photo[photoIndex];
-        updateSlideshow(current);
+        if (currentScene === 'photo') {
+    let current = scenes.photo[photoIndex];
+    updateSlideshow(current);
 
-        let img = images[current.imgs[currentImgIndex]];
+    let img = images[current.imgs[currentImgIndex]];
 
-        ctx.imageSmoothingEnabled = false;
+    // ВАЖЛИВО для пікселів
+    ctx.imageSmoothingEnabled = false;
 
-        // тільки для 3-ї фотки
+    // 👉 тільки для 3-ї фотки (photoIndex = 2)
         if (photoIndex === 2) {
-            const scale = Math.min(
-                canvas.width / img.width,
-                canvas.height / img.height
-            );
 
-            const newWidth = img.width * scale;
-            const newHeight = img.height * scale;
+                const scale = Math.min(
+                    canvas.width / img.width,
+                    canvas.height / img.height
+                );
 
-            const x = (canvas.width - newWidth) / 2;
-            const y = (canvas.height - newHeight) / 2;
+                const newWidth = img.width * scale;
+                const newHeight = img.height * scale;
 
-            ctx.drawImage(img, x, y, newWidth, newHeight);
-        } else {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const x = (canvas.width - newWidth) / 2;
+                const y = (canvas.height - newHeight) / 2;
+
+                ctx.drawImage(img, x, y, newWidth, newHeight);
+
+            } else {
+                // всі інші як були (на весь екран)
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
-        if (displayedText) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
-            ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
+        if (currentScene === 'finale') {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = 'white';
-            ctx.font = '28px Arial';
-            ctx.textAlign = 'left';
+            drawText(displayedText, 'center', 'center');
 
-            const lines = displayedText.split('\n');
-            const lineHeight = 34;
+            if (showContinue && !typing) {
+                ctx.fillStyle = 'yellow';
+                ctx.font = '26px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText("Continue", canvas.width / 2, canvas.height - 80);
+            }
 
-            lines.forEach((line, i) => {
-                ctx.fillText(line, 40, canvas.height - 100 + i * lineHeight);
-            });
+            if (showTheEnd) {
+                ctx.fillStyle = 'yellow';
+                ctx.font = '40px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText("The End", canvas.width / 2, canvas.height - 80);
+            }
         }
+
+        if (fadeAlpha > 0) {
+            ctx.fillStyle = "rgba(0,0,0," + fadeAlpha + ")";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        requestAnimationFrame(gameLoop);
     }
 
-    if (currentScene === 'finale') {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        drawText(displayedText, 'center', 'center');
-
-        if (showContinue && !typing) {
-            ctx.fillStyle = 'yellow';
-            ctx.font = '26px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText("Continue", canvas.width / 2, canvas.height - 80);
-        }
-
-        if (showTheEnd) {
-            ctx.fillStyle = 'yellow';
-            ctx.font = '40px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText("The End", canvas.width / 2, canvas.height - 80);
-        }
-    }
-
-    if (fadeAlpha > 0) {
-        ctx.fillStyle = "rgba(0,0,0," + fadeAlpha + ")";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    requestAnimationFrame(gameLoop);
-}
-};
+    gameLoop();
+};}
