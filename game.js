@@ -22,7 +22,6 @@ window.onload = () => {
     const music66 = new Audio("assets/music66.mp3");
     const music7 = new Audio("assets/music7.mp3");
 
-
     const allAudios = [music1, music2, music3, music4, music55, music5, music6, music66, music7];
 
     allAudios.forEach(audio => {
@@ -30,13 +29,49 @@ window.onload = () => {
         audio.volume = 0;
         audio.pause();
         audio.currentTime = 0;
+        audio.muted = false;
+        audio._fadeInterval = null;
     });
+
     // ---- loop ----
     music55.loop = false;
     music66.loop = true;
 
+    // ---- універсальний fade для аудіо ----
+    function fadeAudio(audio, target = 1, speed = 0.01) {
+        audio.muted = false;
+
+        if (audio.paused && target > 0) {
+            audio.play().catch(() => {});
+        }
+
+        clearInterval(audio._fadeInterval);
+
+        audio._fadeInterval = setInterval(() => {
+            if (Math.abs(audio.volume - target) <= speed) {
+                audio.volume = target;
+
+                if (target === 0) {
+                    audio.pause();
+                }
+
+                clearInterval(audio._fadeInterval);
+                audio._fadeInterval = null;
+                return;
+            }
+
+            if (audio.volume < target) {
+                audio.volume += speed;
+            } else {
+                audio.volume -= speed;
+            }
+        }, 50);
+    }
+
     function unlockAudios() {
         allAudios.forEach(audio => {
+            clearInterval(audio._fadeInterval);
+
             audio.muted = true;
             audio.volume = 0;
             audio.currentTime = 0;
@@ -57,56 +92,12 @@ window.onload = () => {
 
     function stopAllAudios() {
         allAudios.forEach(audio => {
+            clearInterval(audio._fadeInterval);
             audio.pause();
             audio.currentTime = 0;
             audio.volume = 0;
             audio.muted = false;
         });
-    }
-    // ---- fade звук ----
-    function fadeIn(audio, target = 1, speed = 0.01) {
-        audio.muted = false;
-        audio.play().catch(() => {});
-
-        const i = setInterval(() => {
-            if (audio.volume < target) {
-                audio.volume += speed;
-            } else {
-                audio.volume = target;
-                clearInterval(i);
-            }
-        }, 50);
-    }
-
-    function fadeOut(audio, speed = 0.01) {
-        const i = setInterval(() => {
-            if (audio.volume > 0) {
-                audio.volume -= speed;
-            } else {
-                audio.volume = 0;
-                audio.pause();
-                clearInterval(i);
-            }
-        }, 50);
-    }
-
-    function fadeToVolume(audio, target = 1, speed = 0.01) {
-        audio.muted = false;
-        audio.play().catch(() => {});
-
-        const i = setInterval(() => {
-            if (Math.abs(audio.volume - target) <= speed) {
-                audio.volume = target;
-                clearInterval(i);
-                return;
-            }
-
-            if (audio.volume < target) {
-                audio.volume += speed;
-            } else {
-                audio.volume -= speed;
-            }
-        }, 50);
     }
 
     // ---- fade екран ----
@@ -144,22 +135,17 @@ window.onload = () => {
     function applyRotatedGameView() {
         isRotatedAfterVideo = true;
 
-        // міняємо логічні розміри місцями
         canvas.width = window.innerHeight;
         canvas.height = window.innerWidth;
 
-        // ставимо canvas по центру і повертаємо
         canvas.style.position = "absolute";
         canvas.style.top = "50%";
         canvas.style.left = "50%";
         canvas.style.transform = "translate(-50%, -50%) rotate(90deg)";
         canvas.style.transformOrigin = "center center";
 
-        // фізичний розмір після повороту
         canvas.style.width = window.innerHeight + "px";
         canvas.style.height = window.innerWidth + "px";
-
-        // на всяк випадок
         canvas.style.display = "block";
     }
 
@@ -187,6 +173,7 @@ window.onload = () => {
     let showTheEnd = false;
 
     let gameStarted = false;
+
     // ---- slideshow ----
     let currentImgIndex = 0;
     let imgTimer = 0;
@@ -213,11 +200,11 @@ window.onload = () => {
                         text: "hmm... i wish he was here (｡-.-｡)...zzz *Falls Asleep*",
                         pause: 10500,
                         action: () => {
-                            fadeIn(music55, 1);
-                            fadeIn(music5, 0.75);
+                            fadeAudio(music55, 1, 0.01);
+                            fadeAudio(music5, 0.9, 0.01);
 
                             setTimeout(() => {
-                                fadeIn(music66, 0.18);
+                                fadeAudio(music66, 0.08, 0.01);
                             }, 1000);
                         }
                     }
@@ -324,7 +311,7 @@ window.onload = () => {
 
     // ---- BLACK SCENE ----
     function playBlackScene() {
-        fadeIn(music1, 0.6);
+        fadeAudio(music1, 0.6, 0.01);
 
         let i = 0;
 
@@ -339,38 +326,34 @@ window.onload = () => {
 
                     setTimeout(() => {
                         if (i === 3) {
-                            fadeIn(music2, 0.3);
-                            fadeOut(music1);
+                            fadeAudio(music2, 0.3, 0.01);
+                            fadeAudio(music1, 0, 0.01);
                         }
 
                         if (i === 4) {
                             setTimeout(() => {
-                                fadeOut(music1);
+                                fadeAudio(music1, 0, 0.01);
                                 music2.pause();
                                 music2.currentTime = 0;
 
-                                fadeIn(music3, 0.8);
+                                fadeAudio(music3, 0.8, 0.01);
 
-                                    // ⏱ чекаємо поки music3 "типу закінчилась"
+                                setTimeout(() => {
+                                    music1.pause();
+                                    music1.currentTime = 0;
+
+                                    music2.pause();
+                                    music2.currentTime = 0;
+
+                                    fadeAudio(music4, 1, 0.01);
+
                                     setTimeout(() => {
-
-                                        music1.pause();
-                                        music1.currentTime = 0;
-
-                                        music2.pause();
-                                        music2.currentTime = 0;
-
-                                        fadeIn(music4, 1);
-
-                                        // ⏱ чекаємо music4
-                                        setTimeout(() => {
-                                            fadeToBlack(() => {
-                                                startScene('photo');
-                                                fadeFromBlack();
-                                            });
-                                        }, 2000); // ← піджени під довжину music4 2000
-
-                                    }, 2000); // ← піджени під довжину music3 2000
+                                        fadeToBlack(() => {
+                                            startScene('photo');
+                                            fadeFromBlack();
+                                        });
+                                    }, 2000); // піджени під music4
+                                }, 2000); // піджени під music3
                             }, 3000);
                             return;
                         }
@@ -401,7 +384,7 @@ window.onload = () => {
 
         playPhotoTexts(scenes.photo[0]);
 
-        fadeIn(music5, 0.6);
+        fadeAudio(music5, 0.6, 0.01);
 
         setTimeout(() => {
             fadeToBlack(() => {
@@ -410,8 +393,8 @@ window.onload = () => {
                 imgTimer = 0;
                 displayedText = "";
 
-                fadeOut(music5);
-                fadeToVolume(music66, 0.55, 0.01);
+                fadeAudio(music5, 0, 0.01);
+                fadeAudio(music66, 0.65, 0.01);
 
                 fadeFromBlack(0.008);
             }, 0.008);
@@ -424,8 +407,8 @@ window.onload = () => {
                 imgTimer = 0;
                 displayedText = "";
 
-                fadeIn(music7, 1);
-                fadeToVolume(music66, 0.18, 0.01);
+                fadeAudio(music7, 1, 0.01);
+                fadeAudio(music66, 0.08, 0.01);
 
                 fadeFromBlack(0.008);
             }, 0.008);
@@ -443,8 +426,8 @@ window.onload = () => {
 
         setTimeout(() => {
             fadeToBlack(() => {
-                fadeOut(music55);
-                fadeOut(music66);
+                fadeAudio(music55, 0, 0.01);
+                fadeAudio(music66, 0, 0.01);
                 startScene('finale');
                 fadeFromBlack();
             });
@@ -502,7 +485,7 @@ window.onload = () => {
     };
 
     // ---- клік для фіналу ----
-    canvas.addEventListener("click", () => {
+    function handleFinalTap() {
         if (currentScene === 'finale' && !typing) {
             if (showTheEnd) return;
 
@@ -517,7 +500,13 @@ window.onload = () => {
                 }
             }
         }
-    });
+    }
+
+    canvas.addEventListener("click", handleFinalTap);
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        handleFinalTap();
+    }, { passive: false });
 
     // ---- текст ----
     function drawText(text, align = 'center', vertical = 'center') {
