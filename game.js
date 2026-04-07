@@ -23,7 +23,7 @@ window.onload = () => {
     const music7 = new Audio("assets/music7.mp3");
 
 
-    const allAudios = [music1, music2, music3, music4, music55, music5, music6, music66, music7];
+    const allAudios = [];
 
     function unlockAudios() {
         allAudios.forEach(audio => {
