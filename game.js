@@ -343,12 +343,12 @@ window.onload = () => {
                     setTimeout(() => {
                         if (i === 3) {
                             fadeAudio(music2, 0.3, 1.0);
-                            fadeAudio(music1, 0.1, 1.0);
+                            fadeAudio(music1, 0, 1.0);
                         }
 
                         if (i === 4) {
                             setTimeout(() => {
-                                fadeAudio(music1, 0.08, 0.8);
+                                fadeAudio(music1, 0, 0.8);
                                 music2.pause();
                                 music2.currentTime = 0;
 
@@ -424,7 +424,7 @@ window.onload = () => {
                 displayedText = "";
 
                 fadeAudio(music7, 1, 1.0);
-                fadeAudio(music66, 0.02, 1.2); // знову тихо
+                fadeAudio(music66, 0.08, 1.2); // знову тихо
 
                 fadeFromBlack(0.008);
             }, 0.008);
