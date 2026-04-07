@@ -137,7 +137,6 @@ window.onload = () => {
     function fadeFromBlack(speed = 0.02) {
         const i = setInterval(() => {
             fadeAlpha -= speed;
-
             if (fadeAlpha <= 0) {
                 fadeAlpha = 0;
                 clearInterval(i);
@@ -267,7 +266,6 @@ window.onload = () => {
 
         typing = true;
         let i = 0;
-
         const interval = setInterval(() => {
             displayedText += text[i];
             i++;
@@ -411,7 +409,6 @@ window.onload = () => {
 
                 fadeAudio(music5, 0, 1.0);
                 fadeAudio(music66, 0.65, 1.2); // голосніше на 2 сцені
-
                 fadeFromBlack(0.008);
             }, 0.008);
         }, 29000);
@@ -561,7 +558,6 @@ window.onload = () => {
             if (displayedText) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
                 ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
-
                 ctx.fillStyle = 'white';
                 ctx.font = '28px Arial';
                 ctx.textAlign = 'left';
