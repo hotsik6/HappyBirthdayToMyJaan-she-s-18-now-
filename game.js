@@ -199,10 +199,10 @@ window.onload = () => {
         menu: ["Натисни Start ❤️"],
 
         blackText: [
-            "Khushi: ughh, again?! Why I have to go through this?...",
-            "Khushi: Hmm and why does this keep happening with me...",
+            "Khushi: ughh, again?! \nWhy I have to go through this?...",
+            "Khushi: Hmm and why does this keep\nhappening with me...",
             "Khushi: Just... everything feels the same!",
-            "Khushi: hmm...  I'll just... go on the rooftop again...",
+            "Khushi: hmm...  I'll just... \ngo on the rooftop again...",
             "Khushi: I wish.. everything would be fine(TT)"
         ],
 
@@ -211,7 +211,7 @@ window.onload = () => {
                 imgs: ["photo1", "photo15"],
                 texts: [
                     { text: "Khushi: hmm... i feel so sleepy...", pause: 5000 },
-                    { text: "But wait.. i want to turn something on first so i won't feel so alone at least(TT)", pause: 10500 },
+                    { text: "But wait.. i want to turn something on\n first so i won't feel so alone at least(TT)", pause: 10500 },
                     {
                         text: "hmm... i wish he was here (｡-.-｡)...zzz *Falls Asleep*",
                         pause: 10500,
@@ -530,15 +530,20 @@ window.onload = () => {
         ctx.font = '30px Arial';
         ctx.textAlign = align;
 
+        const lines = text.split('\n'); // 👉 розбиваємо по \n
+        const lineHeight = 40;
+
         let x = align === 'left' ? 50 : canvas.width / 2;
 
-        let y = vertical === 'top'
+        let startY = vertical === 'top'
             ? 50
             : vertical === 'bottom'
-                ? canvas.height - 80
-                : canvas.height / 2;
+                ? canvas.height - (lines.length * lineHeight)
+                : canvas.height / 2 - (lines.length * lineHeight) / 2;
 
-        ctx.fillText(text, x, y);
+        lines.forEach((line, i) => {
+            ctx.fillText(line, x, startY + i * lineHeight);
+        });
     }
 
     // ---- render ----
@@ -552,21 +557,33 @@ window.onload = () => {
         }
 
         if (currentScene === 'photo') {
-            let current = scenes.photo[photoIndex];
-            updateSlideshow(current);
+    let current = scenes.photo[photoIndex];
+    updateSlideshow(current);
 
-            let img = images[current.imgs[currentImgIndex]];
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    let img = images[current.imgs[currentImgIndex]];
 
-            if (displayedText) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
-                ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
+    // ВАЖЛИВО для пікселів
+    ctx.imageSmoothingEnabled = false;
 
-                ctx.fillStyle = 'white';
-                ctx.font = '28px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText(displayedText, 40, canvas.height - 100);
-            }
+    // 👉 тільки для 3-ї фотки (photoIndex = 2)
+        if (photoIndex === 2) {
+
+                const scale = Math.min(
+                    canvas.width / img.width,
+                    canvas.height / img.height
+                );
+
+                const newWidth = img.width * scale;
+                const newHeight = img.height * scale;
+
+                const x = (canvas.width - newWidth) / 2;
+                const y = (canvas.height - newHeight) / 2;
+
+                ctx.drawImage(img, x, y, newWidth, newHeight);
+
+            } else {
+                // всі інші як були (на весь екран)
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
         if (currentScene === 'finale') {
@@ -599,4 +616,4 @@ window.onload = () => {
     }
 
     gameLoop();
-};
+};}
