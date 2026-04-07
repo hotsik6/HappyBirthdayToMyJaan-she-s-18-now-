@@ -22,6 +22,21 @@ window.onload = () => {
     const music66 = new Audio("assets/music66.mp3");
     const music7 = new Audio("assets/music7.mp3");
 
+
+    const allAudios = [music1, music2, music3, music4, music55, music5, music6, music66, music7];
+
+    function unlockAudios() {
+        allAudios.forEach(audio => {
+            audio.volume = 0;
+            audio.play()
+                .then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.volume = 1;
+                })
+                .catch(() => {});
+        });
+    }
     // ---- loop ----
     music55.loop = false;
     music66.loop = true;
@@ -438,7 +453,12 @@ window.onload = () => {
     startBtn.onclick = () => {
         startBtn.style.display = 'none';
         video.style.display = 'block';
-        video.play();
+
+        unlockAudios();
+
+        video.play().catch(err => {
+            console.log("video play error:", err);
+        });
     };
 
     video.onended = () => {
