@@ -27,14 +27,23 @@ window.onload = () => {
 
     function unlockAudios() {
         allAudios.forEach(audio => {
+            const oldVolume = audio.volume;
+            const oldMuted = audio.muted;
+
+            audio.muted = true;
             audio.volume = 0;
+
             audio.play()
                 .then(() => {
                     audio.pause();
                     audio.currentTime = 0;
-                    audio.volume = 1;
+                    audio.volume = oldVolume;
+                    audio.muted = oldMuted;
                 })
-                .catch(() => {});
+                .catch(() => {
+                    audio.volume = oldVolume;
+                    audio.muted = oldMuted;
+                });
         });
     }
     // ---- loop ----
@@ -453,6 +462,16 @@ window.onload = () => {
     startBtn.onclick = () => {
         startBtn.style.display = 'none';
         video.style.display = 'block';
+
+        music1.volume = 0;
+        music2.volume = 0;
+        music3.volume = 0;
+        music4.volume = 0;
+        music55.volume = 0;
+        music5.volume = 0;
+        music6.volume = 0;
+        music66.volume = 0;
+        music7.volume = 0;
 
         unlockAudios();
 
