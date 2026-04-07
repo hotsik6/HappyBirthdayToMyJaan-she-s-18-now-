@@ -26,54 +26,71 @@ window.onload = () => {
 
     allAudios.forEach(audio => {
         audio.preload = "auto";
-        audio.volume = 0;
+        audio.loop = false;
+        audio.volume = 1;
         audio.pause();
         audio.currentTime = 0;
         audio.muted = false;
-        audio._fadeInterval = null;
+        audio._fadeTimeout = null;
     });
 
-    // ---- loop ----
     music55.loop = false;
     music66.loop = true;
 
-    // ---- універсальний fade для аудіо ----
-    function fadeAudio(audio, target = 1, speed = 0.01) {
+    // ---- Web Audio API ----
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioContext = new AudioContextClass();
+    const gainMap = new Map();
+
+    function setupAudio(audio) {
+        const source = audioContext.createMediaElementSource(audio);
+        const gainNode = audioContext.createGain();
+
+        source.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        gainNode.gain.value = 0;
+        gainMap.set(audio, gainNode);
+    }
+
+    allAudios.forEach(setupAudio);
+
+    function fadeAudio(audio, target = 1, duration = 1) {
+        const gainNode = gainMap.get(audio);
+        if (!gainNode) return;
+
         audio.muted = false;
 
         if (audio.paused && target > 0) {
             audio.play().catch(() => {});
         }
 
-        clearInterval(audio._fadeInterval);
+        const now = audioContext.currentTime;
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+        gainNode.gain.linearRampToValueAtTime(target, now + duration);
 
-        audio._fadeInterval = setInterval(() => {
-            if (Math.abs(audio.volume - target) <= speed) {
-                audio.volume = target;
+        clearTimeout(audio._fadeTimeout);
 
-                if (target === 0) {
-                    audio.pause();
-                }
+        if (target === 0) {
+            audio._fadeTimeout = setTimeout(() => {
+                audio.pause();
+            }, duration * 1000 + 80);
+        }
+    }
 
-                clearInterval(audio._fadeInterval);
-                audio._fadeInterval = null;
-                return;
-            }
+    function setAudioLevel(audio, value = 0) {
+        const gainNode = gainMap.get(audio);
+        if (!gainNode) return;
 
-            if (audio.volume < target) {
-                audio.volume += speed;
-            } else {
-                audio.volume -= speed;
-            }
-        }, 50);
+        const now = audioContext.currentTime;
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(value, now);
     }
 
     function unlockAudios() {
         allAudios.forEach(audio => {
-            clearInterval(audio._fadeInterval);
-
             audio.muted = true;
-            audio.volume = 0;
             audio.currentTime = 0;
 
             audio.play()
@@ -81,22 +98,22 @@ window.onload = () => {
                     audio.pause();
                     audio.currentTime = 0;
                     audio.muted = false;
-                    audio.volume = 0;
+                    setAudioLevel(audio, 0);
                 })
                 .catch(() => {
                     audio.muted = false;
-                    audio.volume = 0;
+                    setAudioLevel(audio, 0);
                 });
         });
     }
 
     function stopAllAudios() {
         allAudios.forEach(audio => {
-            clearInterval(audio._fadeInterval);
+            clearTimeout(audio._fadeTimeout);
             audio.pause();
             audio.currentTime = 0;
-            audio.volume = 0;
             audio.muted = false;
+            setAudioLevel(audio, 0);
         });
     }
 
@@ -143,7 +160,6 @@ window.onload = () => {
         canvas.style.left = "50%";
         canvas.style.transform = "translate(-50%, -50%) rotate(90deg)";
         canvas.style.transformOrigin = "center center";
-
         canvas.style.width = window.innerHeight + "px";
         canvas.style.height = window.innerWidth + "px";
         canvas.style.display = "block";
@@ -200,11 +216,11 @@ window.onload = () => {
                         text: "hmm... i wish he was here (｡-.-｡)...zzz *Falls Asleep*",
                         pause: 10500,
                         action: () => {
-                            fadeAudio(music55, 1, 0.01);
-                            fadeAudio(music5, 0.9, 0.01);
+                            fadeAudio(music55, 1.0, 1.2);   // голосно
+                            fadeAudio(music5, 0.9, 1.2);    // голосніше
 
                             setTimeout(() => {
-                                fadeAudio(music66, 0.08, 0.01);
+                                fadeAudio(music66, 0.08, 1.0); // тихо
                             }, 1000);
                         }
                     }
@@ -311,7 +327,7 @@ window.onload = () => {
 
     // ---- BLACK SCENE ----
     function playBlackScene() {
-        fadeAudio(music1, 0.6, 0.01);
+        fadeAudio(music1, 0.6, 1.0);
 
         let i = 0;
 
@@ -326,17 +342,17 @@ window.onload = () => {
 
                     setTimeout(() => {
                         if (i === 3) {
-                            fadeAudio(music2, 0.3, 0.01);
-                            fadeAudio(music1, 0, 0.01);
+                            fadeAudio(music2, 0.3, 1.0);
+                            fadeAudio(music1, 0, 1.0);
                         }
 
                         if (i === 4) {
                             setTimeout(() => {
-                                fadeAudio(music1, 0, 0.01);
+                                fadeAudio(music1, 0, 0.8);
                                 music2.pause();
                                 music2.currentTime = 0;
 
-                                fadeAudio(music3, 0.8, 0.01);
+                                fadeAudio(music3, 0.8, 1.0);
 
                                 setTimeout(() => {
                                     music1.pause();
@@ -345,7 +361,7 @@ window.onload = () => {
                                     music2.pause();
                                     music2.currentTime = 0;
 
-                                    fadeAudio(music4, 1, 0.01);
+                                    fadeAudio(music4, 1, 1.0);
 
                                     setTimeout(() => {
                                         fadeToBlack(() => {
@@ -375,16 +391,16 @@ window.onload = () => {
         imgTimer = 0;
         displayedText = "";
 
-        music5.volume = 0;
-        music55.volume = 0;
-        music6.volume = 0;
-        music3.volume = 0;
-        music66.volume = 0;
-        music7.volume = 0;
+        setAudioLevel(music5, 0);
+        setAudioLevel(music55, 0);
+        setAudioLevel(music6, 0);
+        setAudioLevel(music3, 0);
+        setAudioLevel(music66, 0);
+        setAudioLevel(music7, 0);
 
         playPhotoTexts(scenes.photo[0]);
 
-        fadeAudio(music5, 0.6, 0.01);
+        fadeAudio(music5, 0.6, 1.0);
 
         setTimeout(() => {
             fadeToBlack(() => {
@@ -393,8 +409,8 @@ window.onload = () => {
                 imgTimer = 0;
                 displayedText = "";
 
-                fadeAudio(music5, 0, 0.01);
-                fadeAudio(music66, 0.65, 0.01);
+                fadeAudio(music5, 0, 1.0);
+                fadeAudio(music66, 0.65, 1.2); // голосніше на 2 сцені
 
                 fadeFromBlack(0.008);
             }, 0.008);
@@ -407,8 +423,8 @@ window.onload = () => {
                 imgTimer = 0;
                 displayedText = "";
 
-                fadeAudio(music7, 1, 0.01);
-                fadeAudio(music66, 0.08, 0.01);
+                fadeAudio(music7, 1, 1.0);
+                fadeAudio(music66, 0.08, 1.2); // знову тихо
 
                 fadeFromBlack(0.008);
             }, 0.008);
@@ -426,8 +442,8 @@ window.onload = () => {
 
         setTimeout(() => {
             fadeToBlack(() => {
-                fadeAudio(music55, 0, 0.01);
-                fadeAudio(music66, 0, 0.01);
+                fadeAudio(music55, 0, 1.0);
+                fadeAudio(music66, 0, 1.0);
                 startScene('finale');
                 fadeFromBlack();
             });
@@ -467,10 +483,10 @@ window.onload = () => {
 
         startBtn.style.display = 'none';
         video.style.display = 'block';
-
         video.currentTime = 0;
 
         try {
+            await audioContext.resume();
             await video.play();
             unlockAudios();
         } catch (err) {
