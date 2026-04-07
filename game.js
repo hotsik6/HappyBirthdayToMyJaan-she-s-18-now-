@@ -79,6 +79,26 @@ window.onload = () => {
         }
     }
 
+    function wrapText(ctx, text, maxWidth) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = "";
+
+        words.forEach(word => {
+            const testLine = currentLine + word + " ";
+            const width = ctx.measureText(testLine).width;
+
+            if (width > maxWidth && currentLine !== "") {
+                lines.push(currentLine);
+                currentLine = word + " ";
+            } else {
+                currentLine = testLine;
+            }
+        });
+
+        lines.push(currentLine);
+        return lines;
+    }
     function setAudioLevel(audio, value = 0) {
         const gainNode = gainMap.get(audio);
         if (!gainNode) return;
@@ -527,15 +547,21 @@ window.onload = () => {
         ctx.font = '30px Arial';
         ctx.textAlign = align;
 
+        const maxWidth = canvas.width - 100;
+        const lines = wrapText(ctx, text, maxWidth);
+        const lineHeight = 40;
+
         let x = align === 'left' ? 50 : canvas.width / 2;
 
-        let y = vertical === 'top'
+        let startY = vertical === 'top'
             ? 50
             : vertical === 'bottom'
-                ? canvas.height - 80
-                : canvas.height / 2;
+                ? canvas.height - (lines.length * lineHeight)
+                : canvas.height / 2 - (lines.length * lineHeight) / 2;
 
-        ctx.fillText(text, x, y);
+        lines.forEach((line, i) => {
+            ctx.fillText(line, x, startY + i * lineHeight);
+        });
     }
 
     // ---- render ----
@@ -549,21 +575,49 @@ window.onload = () => {
         }
 
         if (currentScene === 'photo') {
-            let current = scenes.photo[photoIndex];
-            updateSlideshow(current);
+    let current = scenes.photo[photoIndex];
+    updateSlideshow(current);
 
-            let img = images[current.imgs[currentImgIndex]];
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    let img = images[current.imgs[currentImgIndex]];
 
-            if (displayedText) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
-                ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
-                ctx.fillStyle = 'white';
-                ctx.font = '28px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText(displayedText, 40, canvas.height - 100);
-            }
-        }
+    ctx.imageSmoothingEnabled = false;
+
+    // тільки для 3-ї фотки
+    if (photoIndex === 2) {
+        const scale = Math.min(
+            canvas.width / img.width,
+            canvas.height / img.height
+        );
+
+        const newWidth = img.width * scale;
+        const newHeight = img.height * scale;
+
+        const x = (canvas.width - newWidth) / 2;
+        const y = (canvas.height - newHeight) / 2;
+
+        ctx.drawImage(img, x, y, newWidth, newHeight);
+    } else {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+
+    // текст поверх фото
+    if (displayedText) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
+        ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
+
+        ctx.fillStyle = 'white';
+        ctx.font = '28px Arial';
+        ctx.textAlign = 'left';
+
+        const maxWidth = canvas.width - 80;
+        const lines = wrapText(ctx, displayedText, maxWidth);
+        const lineHeight = 34;
+
+        lines.forEach((line, i) => {
+            ctx.fillText(line, 40, canvas.height - 100 + i * lineHeight);
+        });
+    }
+}
 
         if (currentScene === 'finale') {
             ctx.fillStyle = 'black';
