@@ -243,7 +243,7 @@ window.onload = () => {
                             fadeAudio(music5, 0.9, 1.2);    // голосніше
 
                             setTimeout(() => {
-                                fadeAudio(music66, 0.08, 1.0, true); // тихо
+                                fadeAudio(music66, 0.08, true); // тихо
                             }, 1000);
                         }
                     }
@@ -432,7 +432,7 @@ window.onload = () => {
                 displayedText = "";
 
                 fadeAudio(music5, 0, 1.0);
-                fadeAudio(music66, 0.65, 1.2); // голосніше на 2 сцені
+                fadeAudio(music66, 0.65, 1.2, 1.0); // голосніше на 2 сцені
                 fadeFromBlack(0.008);
             }, 0.008);
         }, 29000);
