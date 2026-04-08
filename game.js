@@ -617,7 +617,7 @@ video.addEventListener("pause", () => {
         if (currentScene === 'blackText') {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            drawText(displayedText, 'left', 'top');
+            drawText(displayedText, 'center', 'center');
         }
 
         if (currentScene === 'photo') {
