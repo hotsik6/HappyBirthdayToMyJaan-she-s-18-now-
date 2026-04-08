@@ -496,30 +496,72 @@ window.onload = () => {
     }
 
     // ---- кнопки ----
-    startBtn.onclick = async () => {
-        if (gameStarted) return;
-        gameStarted = true;
+// ---- старт після відео ----
+let videoFinished = false;
+let videoFallbackTimeout = null;
 
-        stopAllAudios();
+function startAfterVideo() {
+    if (videoFinished) return;
+    videoFinished = true;
 
-        startBtn.style.display = 'none';
-        video.style.display = 'block';
-        video.currentTime = 0;
+    clearTimeout(videoFallbackTimeout);
 
-        try {
-            await audioContext.resume();
-            await video.play();
-            unlockAudios();
-        } catch (err) {
-            console.log("video play error:", err);
-        }
-    };
+    video.pause();
+    video.style.display = 'none';
 
-    video.onended = () => {
-        video.style.display = 'none';
+    setTimeout(() => {
         applyRotatedGameView();
         startScene('blackText');
-    };
+    }, 120);
+}
+
+// ---- кнопки ----
+startBtn.onclick = async () => {
+    if (gameStarted) return;
+    gameStarted = true;
+    videoFinished = false;
+
+    stopAllAudios();
+
+    startBtn.style.display = 'none';
+    video.style.display = 'block';
+    video.currentTime = 0;
+
+    try {
+        await audioContext.resume();
+        unlockAudios();
+
+        await video.play();
+
+        // fallback для Android, якщо ended не спрацює
+        const durationMs = (!isNaN(video.duration) && video.duration > 0)
+            ? video.duration * 1000
+            : 8000; // запасний варіант, якщо duration ще не відомий
+
+        videoFallbackTimeout = setTimeout(() => {
+            startAfterVideo();
+        }, durationMs + 500);
+
+    } catch (err) {
+        console.log("video play error:", err);
+
+        // якщо відео не запустилось — все одно йдемо далі
+        startAfterVideo();
+    }
+};
+
+// Android-safe
+video.addEventListener("ended", startAfterVideo);
+
+// ще один запасний варіант
+video.addEventListener("pause", () => {
+    if (!video.ended && gameStarted && !videoFinished && video.currentTime > 0) {
+        const nearEnd = video.duration && (video.duration - video.currentTime < 0.25);
+        if (nearEnd) {
+            startAfterVideo();
+        }
+    }
+});
 
     // ---- клік для фіналу ----
     function handleFinalTap() {
@@ -548,7 +590,7 @@ window.onload = () => {
     // ---- текст ----
     function drawText(text, align = 'center', vertical = 'center') {
         ctx.fillStyle = 'white';
-        ctx.font = '30px Arial';
+        ctx.font = '30px sans-serif';
         ctx.textAlign = align;
 
         const maxWidth = canvas.width - 100;
@@ -610,7 +652,7 @@ window.onload = () => {
         ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
 
         ctx.fillStyle = 'white';
-        ctx.font = '28px Arial';
+        ctx.font = '28px sans-serif';
         ctx.textAlign = 'left';
 
         const maxWidth = canvas.width - 80;
@@ -631,14 +673,14 @@ window.onload = () => {
 
             if (showContinue && !typing) {
                 ctx.fillStyle = 'yellow';
-                ctx.font = '26px Arial';
+                ctx.font = '26px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText("Continue", canvas.width / 2, canvas.height - 80);
             }
 
             if (showTheEnd) {
                 ctx.fillStyle = 'yellow';
-                ctx.font = '40px Arial';
+                ctx.font = '40px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText("The End", canvas.width / 2, canvas.height - 80);
             }
