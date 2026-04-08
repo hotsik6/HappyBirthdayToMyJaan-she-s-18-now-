@@ -1,4 +1,5 @@
 window.onload = () => {
+    let textAlpha = 1;
 
     // ---- canvas ----
     const canvas = document.getElementById('gameCanvas');
@@ -10,6 +11,7 @@ window.onload = () => {
     // ---- кнопки ----
     const startBtn = document.getElementById('startBtn');
     const video = document.getElementById('introVideo');
+    const overlayText = document.getElementById('overlayText');
 
     // ---- аудіо ----
     const music1 = new Audio("assets/music1.mp3");
@@ -54,6 +56,34 @@ window.onload = () => {
     }
 
     allAudios.forEach(setupAudio);
+
+    function drawText(text, align = 'center', vertical = 'center') {
+        const { w, h } = getSceneSize();
+
+        ctx.fillStyle = 'white';
+        ctx.font = '30px sans-serif';
+        ctx.textAlign = align;
+        ctx.textBaseline = 'top';
+
+        const maxWidth = w - 100;
+        const lines = wrapText(ctx, text, maxWidth);
+        const lineHeight = 40;
+
+        let x = align === 'left' ? 50 : w / 2;
+
+        let startY;
+        if (vertical === 'top') {
+            startY = 50;
+        } else if (vertical === 'bottom') {
+            startY = h - (lines.length * lineHeight) - 50;
+        } else {
+            startY = h / 2 - (lines.length * lineHeight) / 2;
+        }
+
+        lines.forEach((line, i) => {
+            ctx.fillText(line.trim(), x, startY + i * lineHeight);
+        });
+    }
 
     function fadeAudio(audio, target = 1, duration = 1, restart = false) {
         const gainNode = gainMap.get(audio);
@@ -130,6 +160,12 @@ window.onload = () => {
                 });
         });
     }
+    function getSceneSize() {
+        return {
+            w: isRotatedAfterVideo ? canvas.height : canvas.width,
+            h: isRotatedAfterVideo ? canvas.width : canvas.height
+        };
+    }
 
     function stopAllAudios() {
         allAudios.forEach(audio => {
@@ -170,34 +206,34 @@ window.onload = () => {
     }
 
     // ---- rotate after video ----
+    // ---- rotate after video ----
     let isRotatedAfterVideo = false;
 
     function applyRotatedGameView() {
         isRotatedAfterVideo = true;
 
-        canvas.width = window.innerHeight;
-        canvas.height = window.innerWidth;
+        // лишаємо нормальний внутрішній розмір канваса
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        canvas.style.position = "absolute";
-        canvas.style.top = "50%";
-        canvas.style.left = "50%";
-        canvas.style.transform = "translate(-50%, -50%) rotate(90deg)";
-        canvas.style.transformOrigin = "center center";
-        canvas.style.width = window.innerHeight + "px";
-        canvas.style.height = window.innerWidth + "px";
+        canvas.style.position = "fixed";
+        canvas.style.top = "0";
+        canvas.style.left = "0";
+        canvas.style.width = "100vw";
+        canvas.style.height = "100vh";
         canvas.style.display = "block";
+        canvas.style.transformOrigin = "center center";
+
+        // тільки візуальний поворот
+        
     }
 
     window.addEventListener("resize", () => {
-        if (isRotatedAfterVideo) {
-            canvas.width = window.innerHeight;
-            canvas.height = window.innerWidth;
-            canvas.style.width = window.innerHeight + "px";
-            canvas.style.height = window.innerWidth + "px";
-        } else {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+
+        canvas.style.transform = "none";
     });
 
     // ---- стани ----
@@ -242,9 +278,9 @@ window.onload = () => {
                             fadeAudio(music55, 1.0, 1.2);   // голосно
                             fadeAudio(music5, 0.9, 1.2);    // голосніше
 
-                            setTimeout(() => {
-                                fadeAudio(music66, 0.08, true); // тихо
-                            }, 1000);
+                        setTimeout(() => {
+                            fadeAudio(music66, 0.08, 1.0, true);
+                        }, 1000);
                         }
                     }
                 ]
@@ -375,7 +411,13 @@ window.onload = () => {
                                 music2.currentTime = 0;
 
                                 fadeAudio(music3, 0.8, true);
-
+                                let fade = setInterval(() => {
+                                    textAlpha -= 0.05;
+                                    if (textAlpha <= 0) {
+                                        textAlpha = 0;
+                                        clearInterval(fade);
+                                    }
+                                }, 30);
                                 setTimeout(() => {
                                     music1.pause();
                                     music1.currentTime = 0;
@@ -432,7 +474,7 @@ window.onload = () => {
                 displayedText = "";
 
                 fadeAudio(music5, 0, 1.0);
-                fadeAudio(music66, 0.65, 1.2, 1.0); // голосніше на 2 сцені
+                fadeAudio(music66, 0.65, 1.2, false); // голосніше на 2 сцені
                 fadeFromBlack(0.008);
             }, 0.008);
         }, 29000);
@@ -464,7 +506,7 @@ window.onload = () => {
         setTimeout(() => {
             fadeToBlack(() => {
                 fadeAudio(music55, 0, 1.0);
-                fadeAudio(music66, 0, 1.0);
+                fadeAudio(music66, 0.08, 1.0, false);
                 startScene('finale');
                 fadeFromBlack();
             });
@@ -496,34 +538,160 @@ window.onload = () => {
     }
 
     // ---- кнопки ----
-    startBtn.onclick = async () => {
-        if (gameStarted) return;
-        gameStarted = true;
+// ---- старт після відео ----
+let videoFinished = false;
+let videoFallbackTimeout = null;
 
-        stopAllAudios();
+function startAfterVideo() {
+    if (videoFinished) return;
+    videoFinished = true;
 
-        startBtn.style.display = 'none';
-        video.style.display = 'block';
-        video.currentTime = 0;
+    clearTimeout(videoFallbackTimeout);
 
-        try {
-            await audioContext.resume();
-            await video.play();
-            unlockAudios();
-        } catch (err) {
-            console.log("video play error:", err);
-        }
-    };
+    video.pause();
+    video.style.display = 'none';
 
-    video.onended = () => {
-        video.style.display = 'none';
+    setTimeout(() => {
         applyRotatedGameView();
         startScene('blackText');
-    };
+    }, 120);
+}
+
+// ---- кнопки ----
+startBtn.onclick = async () => {
+    if (gameStarted) return;
+    gameStarted = true;
+    videoFinished = false;
+
+    stopAllAudios();
+
+    startBtn.style.display = 'none';
+    video.style.display = 'block';
+    video.currentTime = 0;
+
+    try {
+        await audioContext.resume();
+        unlockAudios();
+
+        await video.play();
+
+        // fallback для Android, якщо ended не спрацює
+        const durationMs = (!isNaN(video.duration) && video.duration > 0)
+            ? video.duration * 1000
+            : 8000; // запасний варіант, якщо duration ще не відомий
+
+        videoFallbackTimeout = setTimeout(() => {
+            startAfterVideo();
+        }, durationMs + 500);
+
+    } catch (err) {
+        console.log("video play error:", err);
+
+        // якщо відео не запустилось — все одно йдемо далі
+        startAfterVideo();
+    }
+};
+
+// Android-safe
+video.addEventListener("ended", startAfterVideo);
+
+// ще один запасний варіант
+video.addEventListener("pause", () => {
+    if (!video.ended && gameStarted && !videoFinished && video.currentTime > 0) {
+        const nearEnd = video.duration && (video.duration - video.currentTime < 0.25);
+        if (nearEnd) {
+            startAfterVideo();
+        }
+    }
+});
 
     // ---- клік для фіналу ----
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+
+    if (isRotatedAfterVideo) {
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.translate(-canvas.height / 2, -canvas.width / 2);
+    }
+
+    const { w, h } = getSceneSize();
+
+    if (currentScene === 'blackText') {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.globalAlpha = textAlpha;
+        drawText(displayedText, 'center', 'center');
+        ctx.globalAlpha = 1;
+    }
+
+    if (currentScene === 'photo') {
+        let current = scenes.photo[photoIndex];
+        updateSlideshow(current);
+
+        let img = images[current.imgs[currentImgIndex]];
+
+        ctx.imageSmoothingEnabled = false;
+
+        if (img && img.complete) {
+            // нормальне вписування фото без кривого розтягування
+            const scale = Math.min(w / img.width, h / img.height);
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+
+            const x = (w - newWidth) / 2;
+            const y = (h - newHeight) / 2;
+
+            ctx.drawImage(img, x, y, newWidth, newHeight);
+        }
+
+        // текст поверх фото
+        if (displayedText) {
+            
+
+            ctx.fillStyle = 'white';
+            ctx.font = '28px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            const maxWidth = w - 80;
+            const lines = wrapText(ctx, displayedText, maxWidth);
+            const lineHeight = 34;
+
+            lines.forEach((line, i) => {
+                ctx.fillText(line.trim(), 40, h - 140 + i * lineHeight);
+            });
+        }
+    }
+
+    if (currentScene === 'finale') {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, w, h);
+
+    drawText(displayedText, 'center', 'center');
+
+    if (showContinue && !typing) {
+        ctx.fillStyle = 'yellow';
+        ctx.font = '26px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText("Continue", w / 2, h - 80);
+    }
+
+    if (showTheEnd) {
+        ctx.fillStyle = 'yellow';
+        ctx.font = '40px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText("The End", w / 2, h - 80);
+    }
+}
+
     function handleFinalTap() {
-        if (currentScene === 'finale' && !typing) {
+    if (currentScene === 'finale' && !typing) {
             if (showTheEnd) return;
 
             if (showContinue) {
@@ -545,112 +713,15 @@ window.onload = () => {
         handleFinalTap();
     }, { passive: false });
 
-    // ---- текст ----
-    function drawText(text, align = 'center', vertical = 'center') {
-        ctx.fillStyle = 'white';
-        ctx.font = '30px Arial';
-        ctx.textAlign = align;
-
-        const maxWidth = canvas.width - 100;
-        const lines = wrapText(ctx, text, maxWidth);
-        const lineHeight = 40;
-
-        let x = align === 'left' ? 50 : canvas.width / 2;
-
-        let startY = vertical === 'top'
-            ? 50
-            : vertical === 'bottom'
-                ? canvas.height - (lines.length * lineHeight)
-                : canvas.height / 2 - (lines.length * lineHeight) / 2;
-
-        lines.forEach((line, i) => {
-            ctx.fillText(line, x, startY + i * lineHeight);
-        });
+    if (fadeAlpha > 0) {
+        ctx.fillStyle = "rgba(0,0,0," + fadeAlpha + ")";
+        ctx.fillRect(0, 0, w, h);
     }
 
-    // ---- render ----
-    function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
-        if (currentScene === 'blackText') {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            drawText(displayedText);
-        }
-
-        if (currentScene === 'photo') {
-    let current = scenes.photo[photoIndex];
-    updateSlideshow(current);
-
-    let img = images[current.imgs[currentImgIndex]];
-
-    ctx.imageSmoothingEnabled = false;
-
-    // тільки для 3-ї фотки
-    if (photoIndex === 2) {
-        const scale = Math.min(
-            canvas.width / img.width,
-            canvas.height / img.height
-        );
-
-        const newWidth = img.width * scale;
-        const newHeight = img.height * scale;
-
-        const x = (canvas.width - newWidth) / 2;
-        const y = (canvas.height - newHeight) / 2;
-
-        ctx.drawImage(img, x, y, newWidth, newHeight);
-    } else {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    }
-
-    // текст поверх фото
-    if (displayedText) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.11)';
-        ctx.fillRect(20, canvas.height - 170, canvas.width - 40, 120);
-
-        ctx.fillStyle = 'white';
-        ctx.font = '28px Arial';
-        ctx.textAlign = 'left';
-
-        const maxWidth = canvas.width - 80;
-        const lines = wrapText(ctx, displayedText, maxWidth);
-        const lineHeight = 34;
-
-        lines.forEach((line, i) => {
-            ctx.fillText(line, 40, canvas.height - 100 + i * lineHeight);
-        });
-    }
+    requestAnimationFrame(gameLoop);
 }
-
-        if (currentScene === 'finale') {
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            drawText(displayedText, 'center', 'center');
-
-            if (showContinue && !typing) {
-                ctx.fillStyle = 'yellow';
-                ctx.font = '26px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText("Continue", canvas.width / 2, canvas.height - 80);
-            }
-
-            if (showTheEnd) {
-                ctx.fillStyle = 'yellow';
-                ctx.font = '40px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText("The End", canvas.width / 2, canvas.height - 80);
-            }
-        }
-
-        if (fadeAlpha > 0) {
-            ctx.fillStyle = "rgba(0,0,0," + fadeAlpha + ")";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        requestAnimationFrame(gameLoop);
-    }
 
     gameLoop();
 };

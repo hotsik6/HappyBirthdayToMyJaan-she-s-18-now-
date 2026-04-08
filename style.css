@@ -50,3 +50,18 @@ button {
     color: white;
 
 }
+#overlayText {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center;
+
+    color: white;
+    font-size: 24px;
+    text-align: center;
+    width: 80%;
+
+    pointer-events: none;
+    z-index: 9999;
+}
